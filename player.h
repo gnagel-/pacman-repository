@@ -3,20 +3,24 @@
 
 class Player{
 private:
-	//double xpos;
-	//double ypos;
-	//sf::Vector2f mapLocation;
 	sf::Sprite sprite;
 	int score;
 	char direction = 'l'; //(u)p, (d)own, (l)eft, (r)ight,  by default start facing left
+	float speed;
+	float speedAdjust;
+	float speedInc = 8;
+	//int timePass;
+	//int animation;
+	//bool isDead;
 	
 public:
-	double xpos;
-	double ypos;
+	int row;
+	int column;
 
 	Player();
-	Player(double x, double y, sf::Sprite spr);
+	Player(int r, int c, sf::Sprite spr);
 	void move();
+	void move(char toType);
 	void death();
 	void gameOver();
 	sf::Sprite getSprite();
@@ -28,4 +32,6 @@ public:
 	void eatTile();
 	void wrapHorizontal();
 	void setPos(int row, int column);
+
+	void update();
 };

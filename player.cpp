@@ -3,45 +3,108 @@
 
 #include "player.h";
 
-Player::Player(double x, double y, sf::Sprite spr){
-		xpos = x;
-		ypos = y;
-		sprite = spr;
-		score = 0;
+Player::Player(int r, int c, sf::Sprite spr){
+	row = r;
+	column = c;
+	sprite = spr;
+	score = 0;
+	speed = 0.1;
+	speedAdjust = 0;
+	//timePass = 0;
+	//animation = 225;
+	//bool isDead;
 }
 
 void Player::move(){
+	if (direction == 'l' && row == 17 && column == 27) wrapHorizontal();
+	else if (direction == 'r' && row == 17 && column == 1) wrapHorizontal();
 	//up
-	if (direction == 'u'){
+	else if (direction == 'u'){
 		sprite.move(0, -8);
-		xpos -= 1;
+		row -= 1;
 	}
 	//down
 	else if (direction == 'd'){
 		sprite.move(0, 8);
-		xpos += 1;
+		row += 1;
 	}
 	//left
 	else if (direction == 'l'){
 		sprite.move(-8, 0);
-		ypos -= 1;
+		column -= 1;
 	}
 	//right
 	else if (direction == 'r'){
 		sprite.move(8, 0);
-		ypos += 1;
+		column += 1;
+	}
+}
+void Player::move(char toType){
+
+	speedAdjust += speed; //reconcile sprite movement/position with map position
+
+	if (direction == 'l' && row == 17 && column <= 1){
+		wrapHorizontal();
+	}
+	else if (direction == 'r' && row == 17 && column >= 26){
+		wrapHorizontal();
+	}
+	else if (toType != 'w'){
+
+		//up
+		if (direction == 'u'){
+			//sprite.move(0, -8);
+			//row -= 1;
+			sprite.move(0, -speed);
+			if (speedAdjust >= speedInc){
+				row -= 1;
+				speedAdjust = 0;
+			}
+		}
+		//down
+		else if (direction == 'd'){
+			//sprite.move(0, 8);
+			//row += 1;
+			sprite.move(0, speed);
+			if (speedAdjust >= speedInc){
+				row += 1;
+				speedAdjust = 0;
+			}
+		}
+		//left
+		else if (direction == 'l'){
+			//sprite.move(-8, 0);
+			//column -= 1;
+			sprite.move(-speed, 0);
+			if (speedAdjust >= speedInc){
+				column -= 1;
+				speedAdjust = 0;
+			}
+		}
+		//right
+		else if (direction == 'r'){
+			//sprite.move(8, 0);
+			//column += 1;
+			sprite.move(speed, 0);
+			if (speedAdjust >= speedInc){
+				column += 1;
+				speedAdjust = 0;
+			}
+		}
 	}
 }
 
+
 void Player::wrapHorizontal(){
 	if (direction == 'l'){
-		sprite.setPosition(27*8, xpos*8);
-		ypos = 27;
+		sprite.setPosition(27*8, row*8);
+		column = 27;
 	}
-	if (direction == 'r'){
-		sprite.setPosition(8, xpos * 8);
-		ypos = 1;
+	else if (direction == 'r'){
+		sprite.setPosition(8, row * 8);
+		column = 1;
 	}
+		speedAdjust = 0;
 }
 
 //sprite get and set
@@ -79,7 +142,8 @@ void eatTile(){
 	;
 }
 
-void Player::setPos(int row, int column){
-	xpos = row;
-	ypos = column;
+void Player::setPos(int r, int c){
+	row=r;
+	column=c;
 }
+

@@ -16,7 +16,7 @@ int main(){
 	int gameWidth = 224;
 	int gameHeight = 288;
 	sf::RenderWindow window(sf::VideoMode(gameWidth, gameHeight), "SFML Application");
-	//window.setFramerateLimit(60);
+	window.setFramerateLimit(60);
 	int rows = 36;
 	int cols = 28;
 	Tile tileArray[36][28];
@@ -132,6 +132,9 @@ int main(){
 
 	Ghosts blinky('s', 'b', blinkySpr, 14, 13);
 	blinkySpr.setPosition(13 * 8, 14 * 8);
+	int bRow = blinky.getRow();
+	int bCol = blinky.getColumn();
+	blinky.scatterMode();
 
 	//inky
 	sf::Sprite inkySpr;
@@ -179,11 +182,47 @@ int main(){
 	int dotCounter = 0;
 	bool frightMode = false;
 
+	char toTileb = 'e';
+	char bToTileUp;
+	char bToTileDown;
+	char bToTileLeft;
+	char bToTileRight;
+	char bestDirection = 'l';
+
+
+	clock.restart();
 ////////--------window loop--------------/////////////
 	while (window.isOpen()){
+		/*timer working as expected so far, just dealing with something else first
+		//wave 1: scatter 7, chase 20
+		if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 1){
+		//printf("wave 1 - fright\n");
+		blinkySpr.setTextureRect(fright);
+		clock.restart();
+		waveCount++;
+		}//wave 2: scatter 7, chase 20
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 2){
+		//printf("wave 2 - normal\n");
+		blinkySpr.setTextureRect(blink);
+		clock.restart();
+		waveCount++;
+		}// wave 3: scatter 5, chase 20
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 3){
+		//printf("wave 3 - fright\n");
+		blinkySpr.setTextureRect(fright);
+		clock.restart();
+		waveCount++;
+		}// wave 4: scatter 5, chase permanent
+		if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 4){
+		//printf("wave 2 - normal\n");
+		blinkySpr.setTextureRect(blink);
+		clock.restart();
+		waveCount++;
+		}
+		*/
 
 		//ghost, player collision
-		if (pRow == blinky.row && pCol == blinky.column){
+		if (pRow == blinky.getRow() && pCol == blinky.getColumn()){
 			if (blinky.getMode() == 'f'){ //collision in fright mode
 				score += gScore;
 				scoreDisplay.setString("Score: " + (std::to_string(score)));
@@ -201,6 +240,7 @@ int main(){
 			}
 		}
 
+		//player
 		if (player.getDirection() == 'u'){
 			toTileType = tileArray[pRow - 1][pCol].getType();
 		}
@@ -214,6 +254,57 @@ int main(){
 			toTileType = tileArray[pRow][pCol + 1].getType();
 		}
 
+		//blinky scatter
+		//blinky.setTarget(blinky.getHomeRow(), blinky.getHomeColumn());
+
+		float lastDistance = -1;
+		float distance;
+		char nextDirection = blinky.getDirection();
+		//look right
+		if ((tileArray[bRow][bCol + 1].getType() != 'w') && blinky.getDirection() != 'l'){
+			nextDirection = 'r';
+			lastDistance = (sqrt((bCol + 1 - blinky.getTargetColumn()) * (bCol + 1 - blinky.getTargetColumn())
+				+ (blinky.getTargetRow() - bRow) * (blinky.getTargetRow() - bRow)));
+		}
+		//look down
+		if ((tileArray[bRow+1][bCol].getType() != 'w') && blinky.getDirection() != 'u'){
+			distance = (sqrt((bCol - pCol) * (bCol - pCol)
+				+ (bRow + 1 - blinky.getTargetRow()) * (bRow + 1 - blinky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'd';
+				lastDistance = distance;
+			}
+		}//look left
+		if (tileArray[bRow][bCol - 1].getType() != 'w' && blinky.getDirection() != 'r'){
+			distance = (sqrt((bCol - 1 - blinky.getTargetColumn()) * (bCol - 1 - blinky.getTargetColumn())
+				+ (bRow - blinky.getTargetRow()) * (bRow - blinky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'l';
+				lastDistance = distance;
+			}
+			//printf("L");
+		}//look up
+		if (tileArray[bRow - 1][bCol].getType() != 'w' && blinky.getDirection() != 'd'){
+			distance = (sqrt((bCol - blinky.getTargetColumn()) * (bCol - blinky.getTargetColumn())
+				+ (bRow - 1 - blinky.getTargetRow()) * (bRow - 1 - blinky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'u';
+			}
+		}
+
+		if (blinky.getSpeedAdjust() >= blinky.getSpeedInc() - blinky.getSpeed()){
+			blinky.setDirection(nextDirection);
+		}
+		blinky.move();
+		printf("adjust: %f, inc:  %f\n", blinky.getSpeedAdjust(), blinky.getSpeedInc());
+		//printf("target row: %d, target col:  %d\n", blinky.getTargetRow(), blinky.getTargetColumn());
+		bRow = blinky.getRow();
+		bCol = blinky.getColumn();
+		blinkySpr.setPosition(bCol * 8, bRow * 8);
+		
+		//printf("Blinky row: %d, Column: %d \n", bRow, bCol);
+
+		
 		/////////------event loop-------------//////////////////
 		sf::Event event;
 		while (window.pollEvent(event)){
@@ -225,37 +316,38 @@ int main(){
 
 			//move player up
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)){
-				printf("Row: %d, Column: %d\n MovingTo Row : %d, Column : %d \n", pRow, pCol, pRow - 1, pCol);
+				//printf("Row: %d, Column: %d\n MovingTo Row : %d, Column : %d \n", pRow, pCol, pRow - 1, pCol);
 
 				toTileType = tileArray[pRow - 1][pCol].getType();
 				if (toTileType != 'w') player.setDirection('u');
 			}
 			//move player down
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)){
-				printf("Row: %d, Column: %d\n MovingTo Row: %d, Column: %d \n", pRow, pCol, pRow + 1, pCol);
+				//printf("Row: %d, Column: %d\n MovingTo Row: %d, Column: %d \n", pRow, pCol, pRow + 1, pCol);
 
 				toTileType = tileArray[pRow + 1][pCol].getType();
 				if (toTileType != 'w') player.setDirection('d');
 			}
 			//move player left
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)){
-				printf("Row: %d, Column: %d\n MovingTo Row: %d, Column: %d \n", pRow, pCol, pRow, pCol - 1);
+				//printf("Row: %d, Column: %d\n MovingTo Row: %d, Column: %d \n", pRow, pCol, pRow, pCol - 1);
 
 				toTileType = tileArray[pRow][pCol - 1].getType();
 				if (toTileType != 'w') player.setDirection('l');
 			}
 			//move player right
 			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
-				printf("current Row: %d, Column: %d\n MovingTo Row: %d, Column: %d \n", pRow, pCol, pRow, pCol + 1);
+				//printf("current Row: %d, Column: %d\n MovingTo Row: %d, Column: %d \n", pRow, pCol, pRow, pCol + 1);
 
 				toTileType = tileArray[pRow][pCol + 1].getType();
 				if (toTileType != 'w') player.setDirection('r');
 			}
 
-			//reset dots
+			//reset dots, ghost positions
 			if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::R)){
+				blinky.resetGhost();
+				blinkySpr.setTextureRect(blink);
 				blinkySpr.setPosition(13 * 8, 14 * 8);
-				blinky.setPos(14, 13);
 
 				for (int i = 0; i < rows; i++){
 					for (int j = 0; j < cols; j++){
@@ -280,8 +372,11 @@ int main(){
 
 		if (toTileType != 'w'){
 			player.move(toTileType);
-			printf("\ncurrent Row : %d, Column : %d\n ", pRow, pCol);
+			//printf("\ncurrent Row : %d, Column : %d\n ", pRow, pCol);
 			playerSprite.setPosition(player.column * 8, player.row * 8);
+
+			//blinky.move();
+			//blinkySpr.setPosition(blinky.getHomeColumn(), blinky.getRow());
 
 			if (toTileType == 'd'){ //eat dot, adjust tile
 				if (player.getDirection() == 'u'){
@@ -353,13 +448,13 @@ int main(){
 					window.draw(drawTi);
 
 				}
-				/*
+				
 				else if (t.getType() == 'e'){
 				sf::Sprite drawTi = wall; //t.getSprite();
 				drawTi.setPosition(xpos, ypos);
 				window.draw(drawTi);
 				}
-				*/
+				
 			}
 		}
 
@@ -367,10 +462,15 @@ int main(){
 		window.draw(playerSprite);
 		pRow = player.row;
 		pCol = player.column;
+
 		window.draw(blinkySpr);
+		bRow = blinky.getRow();
+		bCol = blinky.getColumn();
+
 		window.draw(inkySpr);
 		window.draw(pinkySpr);
 		window.draw(clydeSpr);
+
 		window.draw(scoreDisplay);
 		if (lives > 1){
 			window.draw(life1);

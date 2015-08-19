@@ -141,9 +141,13 @@ void Tile::resetMap(int xval, int yval){
 		if ((xval == 15 || xval == 16) && (yval == 9 || yval == 18)){ //rows 12, 13
 			type = 'e';
 		}
-		if ((xval == 17) && (yval < 6 || yval == 7 || yval == 8 || yval == 9 || yval == 18 || yval ==19 
-			|| yval==20 || yval>21)){ //row 14
+		if ((xval == 17) && (yval<10 || yval >17)){
+			/*(yval < 6 || yval == 7 || yval == 8 || yval == 9 || yval == 18 || yval ==19 
+			|| yval==20 || yval>21)){ //row 14*/
 			type = 'e';
+			if ((xval == 17) && (yval == 6 || yval == 21)){
+				type = 'd';
+			}
 		}
 		if ((xval == 18 || xval == 19) && (yval == 9 || yval == 18)){ //rows 14, 15
 			type = 'e';

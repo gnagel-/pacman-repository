@@ -9,9 +9,6 @@ private:
 	float speed;
 	float speedAdjust;
 	float speedInc = 8;
-	//int timePass;
-	//int animation;
-	//bool isDead;
 	
 public:
 	int row;

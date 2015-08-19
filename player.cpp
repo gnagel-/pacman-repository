@@ -8,14 +8,11 @@ Player::Player(int r, int c, sf::Sprite spr){
 	column = c;
 	sprite = spr;
 	score = 0;
-	speed = 0.1;
+	speed = 1.0;
 	speedAdjust = 0;
-	//timePass = 0;
-	//animation = 225;
-	//bool isDead;
 }
 
-void Player::move(){
+void Player::move(){ //don't think this one's in use
 	if (direction == 'l' && row == 17 && column == 27) wrapHorizontal();
 	else if (direction == 'r' && row == 17 && column == 1) wrapHorizontal();
 	//up

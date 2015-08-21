@@ -145,6 +145,8 @@ int main(){
 
 	Ghosts inky('h', 'i', inkySpr, 14, 14); //movement will start outside house
 	inkySpr.setPosition(11.5 * 8, 16.5 * 8);
+	int iRow = inky.getRow();
+	int iCol = inky.getColumn();
 
 	//pinky
 	sf::Sprite pinkySpr;
@@ -155,6 +157,8 @@ int main(){
 
 	Ghosts pinky('h', 'p', pinkySpr, 14, 14);
 	pinkySpr.setPosition(13.5 * 8, 17 * 8);
+	int piRow = pinky.getRow();
+	int piCol = pinky.getColumn();
 
 	//clyde
 	sf::Sprite clydeSpr;
@@ -165,6 +169,8 @@ int main(){
 
 	Ghosts clyde('h', 'c', clydeSpr, 14, 14);
 	clydeSpr.setPosition(15.5 * 8, 16.5 * 8);
+	int cRow = clyde.getRow();
+	int cCol = clyde.getColumn();
 
 	//fright sprite
 	//sf::Sprite frightSpr;
@@ -173,14 +179,16 @@ int main(){
 	//frightSpr.setTextureRect(fright);
 	//frightSpr.setOrigin(8, 8);
 
-	//timer
+	//scatter chase timer
 	sf::Clock clock;
-	//sf::Clock clock2;
-	//sf::Time elapsed1;
-	int waveCount = 1;
+	sf::Time elapsed1;
+	float waveCount = 1;
 	bool midWave = false;
+
 	int dotCounter = 0;
-	bool frightMode = false;
+
+	//fright timer
+	sf::Clock frightTimer;
 
 	char toTileb = 'e';
 	char bToTileUp;
@@ -190,36 +198,86 @@ int main(){
 	char bestDirection = 'l';
 
 
+	blinky.scatterMode(); //start in scatter mode
 	clock.restart();
-////////--------window loop--------------/////////////
+	////////--------window loop--------------/////////////
 	while (window.isOpen()){
-		/*timer working as expected so far, just dealing with something else first
 		//wave 1: scatter 7, chase 20
-		if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 1){
-		//printf("wave 1 - fright\n");
-		blinkySpr.setTextureRect(fright);
-		clock.restart();
-		waveCount++;
-		}//wave 2: scatter 7, chase 20
-		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 2){
-		//printf("wave 2 - normal\n");
-		blinkySpr.setTextureRect(blink);
-		clock.restart();
-		waveCount++;
-		}// wave 3: scatter 5, chase 20
-		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 3){
-		//printf("wave 3 - fright\n");
-		blinkySpr.setTextureRect(fright);
-		clock.restart();
-		waveCount++;
-		}// wave 4: scatter 5, chase permanent
-		if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 4){
-		//printf("wave 2 - normal\n");
-		blinkySpr.setTextureRect(blink);
-		clock.restart();
-		waveCount++;
+		if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 1){ //7 seconds up, switch to  chase
+			//printf("wave 1 - fright\n");
+			//blinkySpr.setTextureRect(fright);
+			//blinky.setTarget(pRow, pCol); //chase
+			blinky.chaseMode(pRow, pCol, player.getDirection());
+			pinky.chaseMode(pRow, pCol, player.getDirection());
+			inky.chaseModeInky(pRow, pCol, bRow, bCol, player.getDirection(), blinky.getDirection());
+			clyde.chaseModeClyde(pRow, pCol, player.getDirection());
+			clock.restart();
+			waveCount += 0.5;
 		}
-		*/
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 1.5){ //20 seconds up, switch to scatter
+			//printf("wave 2 - normal\n");
+			//blinkySpr.setTextureRect(blink);
+			blinky.scatterMode();
+			pinky.scatterMode();
+			inky.scatterMode();
+			clyde.scatterMode();
+			clock.restart();
+			waveCount += 0.5;
+		}
+		//wave 2: scatter 7, chase 20
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 2){
+			//printf("wave 2 - normal\n");
+			//blinkySpr.setTextureRect(fright);
+			blinky.chaseMode(pRow, pCol, player.getDirection());
+			pinky.chaseMode(pRow, pCol, player.getDirection());
+			inky.chaseModeInky(pRow, pCol, bRow, bCol, player.getDirection(), blinky.getDirection());
+			clyde.chaseModeClyde(pRow, pCol, player.getDirection());
+			clock.restart();
+			waveCount += 0.5;
+		}
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 2.5){
+			//printf("wave 2 - normal\n");
+			//blinkySpr.setTextureRect(blink);
+			blinky.scatterMode();
+			pinky.scatterMode();
+			inky.scatterMode();
+			clyde.scatterMode();
+			clock.restart();
+			waveCount += 0.5;
+		}
+		// wave 3: scatter 5, chase 20
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 3){
+			//printf("wave 2 - normal\n");
+			//blinkySpr.setTextureRect(fright);
+			blinky.chaseMode(pRow, pCol, player.getDirection());
+			pinky.chaseMode(pRow, pCol, player.getDirection());
+			inky.chaseModeInky(pRow, pCol, bRow, bCol, player.getDirection(), blinky.getDirection());
+			clyde.chaseModeClyde(pRow, pCol, player.getDirection());
+			clock.restart();
+			waveCount += 0.5;
+		}
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 3.5){
+			//printf("wave 3 - fright\n");
+			//blinkySpr.setTextureRect(blink);
+			blinky.scatterMode();
+			pinky.scatterMode();
+			inky.scatterMode();
+			clyde.scatterMode();
+			clock.restart();
+			waveCount += 0.5;
+		}
+		// wave 4: scatter 5, chase permanent
+		else if (clock.getElapsedTime() >= sf::seconds(4) && waveCount == 4){
+			//printf("wave 2 - normal\n");
+			//blinkySpr.setTextureRect(fright);
+			blinky.chaseMode(pRow, pCol, player.getDirection());
+			pinky.chaseMode(pRow, pCol, player.getDirection());
+			inky.chaseModeInky(pRow, pCol, bRow, bCol, player.getDirection(), blinky.getDirection());
+			clyde.chaseModeClyde(pRow, pCol, player.getDirection());
+			clock.restart();
+			waveCount += 0.5;
+		}
+
 
 		//ghost, player collision
 		if (pRow == blinky.getRow() && pCol == blinky.getColumn()){
@@ -231,12 +289,16 @@ int main(){
 				blinkySpr.setPosition(12.5 * 8, 17 * 8);
 				blinky.setPos(17, 12);
 				blinky.setMode('h');
+
 			}
 			else { //lose a life
 				lives -= 1;
 				player.setPos(20, 14);
 				playerSprite.setPosition(14 * 8, 20 * 8); //just under ghost house
 				player.setSprite(playerSprite);
+
+				clock.restart(); //reset scatterChase timer
+				waveCount = 1;
 			}
 		}
 
@@ -254,57 +316,205 @@ int main(){
 			toTileType = tileArray[pRow][pCol + 1].getType();
 		}
 
-		//blinky scatter
-		//blinky.setTarget(blinky.getHomeRow(), blinky.getHomeColumn());
-
+//for some reason array not cooperating, so tons of text for  ghost movement
+		//blinky movement
 		float lastDistance = -1;
 		float distance;
 		char nextDirection = blinky.getDirection();
 		//look right
 		if ((tileArray[bRow][bCol + 1].getType() != 'w') && blinky.getDirection() != 'l'){
 			nextDirection = 'r';
+			//lastDistance = blinky.distanceCheck(bRow, bCol+1);
 			lastDistance = (sqrt((bCol + 1 - blinky.getTargetColumn()) * (bCol + 1 - blinky.getTargetColumn())
 				+ (blinky.getTargetRow() - bRow) * (blinky.getTargetRow() - bRow)));
+
 		}
 		//look down
-		if ((tileArray[bRow+1][bCol].getType() != 'w') && blinky.getDirection() != 'u'){
+		if ((tileArray[bRow + 1][bCol].getType() != 'w') && blinky.getDirection() != 'u'){
+			//distance = blinky.distanceCheck(bRow+1, bCol);
 			distance = (sqrt((bCol - pCol) * (bCol - pCol)
 				+ (bRow + 1 - blinky.getTargetRow()) * (bRow + 1 - blinky.getTargetRow())));
+
 			if (distance <= lastDistance || lastDistance == -1){
 				nextDirection = 'd';
 				lastDistance = distance;
 			}
 		}//look left
 		if (tileArray[bRow][bCol - 1].getType() != 'w' && blinky.getDirection() != 'r'){
+			//distance = blinky.distanceCheck(bRow, bCol-1);
 			distance = (sqrt((bCol - 1 - blinky.getTargetColumn()) * (bCol - 1 - blinky.getTargetColumn())
 				+ (bRow - blinky.getTargetRow()) * (bRow - blinky.getTargetRow())));
+
 			if (distance <= lastDistance || lastDistance == -1){
 				nextDirection = 'l';
 				lastDistance = distance;
 			}
-			//printf("L");
 		}//look up
 		if (tileArray[bRow - 1][bCol].getType() != 'w' && blinky.getDirection() != 'd'){
+			//distance = blinky.distanceCheck(bRow-1, bCol);
 			distance = (sqrt((bCol - blinky.getTargetColumn()) * (bCol - blinky.getTargetColumn())
 				+ (bRow - 1 - blinky.getTargetRow()) * (bRow - 1 - blinky.getTargetRow())));
+
 			if (distance <= lastDistance || lastDistance == -1){
 				nextDirection = 'u';
 			}
 		}
 
+		if (blinky.getMode() == 'c'){ //make sure chase target is up to date
+			blinky.chaseMode(pRow, pCol, player.getDirection());
+			//printf("target row: %d, target col:  %d\n", blinky.getTargetRow(), blinky.getTargetColumn());
+		}
 		if (blinky.getSpeedAdjust() >= blinky.getSpeedInc() - blinky.getSpeed()){
 			blinky.setDirection(nextDirection);
 		}
 		blinky.move();
-		printf("adjust: %f, inc:  %f\n", blinky.getSpeedAdjust(), blinky.getSpeedInc());
+		//printf("adjust: %f, inc:  %f\n", blinky.getSpeedAdjust(), blinky.getSpeedInc());
 		//printf("target row: %d, target col:  %d\n", blinky.getTargetRow(), blinky.getTargetColumn());
 		bRow = blinky.getRow();
 		bCol = blinky.getColumn();
 		blinkySpr.setPosition(bCol * 8, bRow * 8);
-		
-		//printf("Blinky row: %d, Column: %d \n", bRow, bCol);
 
-		
+//
+		//inky movement
+		lastDistance = -1;
+		distance;
+		nextDirection = inky.getDirection();
+		//look right
+		if ((tileArray[iRow][iCol + 1].getType() != 'w') && inky.getDirection() != 'l'){
+			nextDirection = 'r';
+			lastDistance = (sqrt((iCol + 1 - inky.getTargetColumn()) * (iCol + 1 - inky.getTargetColumn())
+				+ (inky.getTargetRow() - iRow) * (inky.getTargetRow() - iRow)));
+		}
+		//look down
+		if ((tileArray[iRow + 1][iCol].getType() != 'w') && inky.getDirection() != 'u'){
+			distance = (sqrt((iCol - pCol) * (iCol - pCol)
+				+ (iRow + 1 - inky.getTargetRow()) * (iRow + 1 - inky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'd';
+				lastDistance = distance;
+			}
+		}//look left
+		if (tileArray[iRow][iCol - 1].getType() != 'w' && inky.getDirection() != 'r'){
+			distance = (sqrt((iCol - 1 - inky.getTargetColumn()) * (iCol - 1 - inky.getTargetColumn())
+				+ (iRow - inky.getTargetRow()) * (iRow - inky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'l';
+				lastDistance = distance;
+			}
+		}//look up
+		if (tileArray[iRow - 1][iCol].getType() != 'w' && inky.getDirection() != 'd'){
+			distance = (sqrt((iCol - inky.getTargetColumn()) * (iCol - inky.getTargetColumn())
+				+ (iRow - 1 - inky.getTargetRow()) * (iRow - 1 - inky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'u';
+			}
+		}
+
+		if (inky.getMode() == 'c'){ //make sure chase target is up to date
+			inky.chaseModeInky(pRow, pCol,bRow,bCol, player.getDirection(), blinky.getDirection());
+		}
+		if (inky.getSpeedAdjust() >= inky.getSpeedInc() - inky.getSpeed()){
+			inky.setDirection(nextDirection);
+		}
+		inky.move();
+		iRow = inky.getRow();
+		iCol = inky.getColumn();
+		inkySpr.setPosition(iCol * 8, iRow * 8);
+//
+		//pinky movement
+		lastDistance = -1;
+		distance;
+		nextDirection = inky.getDirection();
+		//look right
+		if ((tileArray[piRow][piCol + 1].getType() != 'w') && pinky.getDirection() != 'l'){
+			nextDirection = 'r';
+			lastDistance = (sqrt((piCol + 1 - pinky.getTargetColumn()) * (piCol + 1 - pinky.getTargetColumn())
+				+ (pinky.getTargetRow() - piRow) * (pinky.getTargetRow() - piRow)));
+		}
+		//look down
+		if ((tileArray[piRow + 1][piCol].getType() != 'w') && pinky.getDirection() != 'u'){
+			distance = (sqrt((piCol - pCol) * (piCol - pCol)
+				+ (piRow + 1 - pinky.getTargetRow()) * (piRow + 1 - pinky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'd';
+				lastDistance = distance;
+			}
+		}//look left
+		if (tileArray[piRow][piCol - 1].getType() != 'w' && pinky.getDirection() != 'r'){
+			distance = (sqrt((piCol - 1 - pinky.getTargetColumn()) * (piCol - 1 - pinky.getTargetColumn())
+				+ (piRow - pinky.getTargetRow()) * (piRow - pinky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'l';
+				lastDistance = distance;
+			}
+		}//look up
+		if (tileArray[piRow - 1][piCol].getType() != 'w' && pinky.getDirection() != 'd'){
+			distance = (sqrt((piCol - pinky.getTargetColumn()) * (piCol - pinky.getTargetColumn())
+				+ (piRow - 1 - pinky.getTargetRow()) * (piRow - 1 - pinky.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'u';
+			}
+		}
+
+		if (pinky.getMode() == 'c'){ //make sure chase target is up to date
+			pinky.chaseMode(pRow, pCol, player.getDirection());
+		}
+		if (pinky.getSpeedAdjust() >= pinky.getSpeedInc() - pinky.getSpeed()){
+			pinky.setDirection(nextDirection);
+		}
+		pinky.move();
+		piRow = pinky.getRow();
+		piCol = pinky.getColumn();
+		pinkySpr.setPosition(piCol * 8, piRow * 8);
+//
+		//clyde movement
+		lastDistance = -1;
+		distance;
+		nextDirection = clyde.getDirection();
+		//look right
+		if ((tileArray[cRow][cCol + 1].getType() != 'w') && clyde.getDirection() != 'l'){
+			nextDirection = 'r';
+			lastDistance = (sqrt((cCol + 1 - clyde.getTargetColumn()) * (cCol + 1 - clyde.getTargetColumn())
+				+ (clyde.getTargetRow() - cRow) * (clyde.getTargetRow() - cRow)));
+		}
+		//look down
+		if ((tileArray[cRow + 1][cCol].getType() != 'w') && clyde.getDirection() != 'u'){
+			distance = (sqrt((cCol - pCol) * (cCol - pCol)
+				+ (cRow + 1 - clyde.getTargetRow()) * (cRow + 1 - clyde.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'd';
+				lastDistance = distance;
+			}
+		}//look left
+		if (tileArray[cRow][cCol - 1].getType() != 'w' && clyde.getDirection() != 'r'){
+			distance = (sqrt((cCol - 1 - clyde.getTargetColumn()) * (cCol - 1 - clyde.getTargetColumn())
+				+ (cRow - clyde.getTargetRow()) * (cRow - clyde.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'l';
+				lastDistance = distance;
+			}
+		}//look up
+		if (tileArray[cRow - 1][cCol].getType() != 'w' && clyde.getDirection() != 'd'){
+			distance = (sqrt((cCol - clyde.getTargetColumn()) * (cCol - clyde.getTargetColumn())
+				+ (cRow - 1 - clyde.getTargetRow()) * (cRow - 1 - clyde.getTargetRow())));
+			if (distance <= lastDistance || lastDistance == -1){
+				nextDirection = 'u';
+			}
+		}
+
+		if (clyde.getMode() == 'c'){ //make sure chase target is up to date
+			clyde.chaseModeClyde(pRow, pCol, player.getDirection());
+		}
+		if (clyde.getSpeedAdjust() >= clyde.getSpeedInc() - clyde.getSpeed()){
+			clyde.setDirection(nextDirection);
+		}
+		clyde.move();
+		cRow = clyde.getRow();
+		cCol = clyde.getColumn();
+		clydeSpr.setPosition(cCol * 8, cRow * 8);
+
+
+
 		/////////------event loop-------------//////////////////
 		sf::Event event;
 		while (window.pollEvent(event)){
@@ -368,15 +578,12 @@ int main(){
 		}
 
 
-///////////////-----end event loop-----/////////////////
+		///////////////-----end event loop-----/////////////////
 
 		if (toTileType != 'w'){
 			player.move(toTileType);
 			//printf("\ncurrent Row : %d, Column : %d\n ", pRow, pCol);
 			playerSprite.setPosition(player.column * 8, player.row * 8);
-
-			//blinky.move();
-			//blinkySpr.setPosition(blinky.getHomeColumn(), blinky.getRow());
 
 			if (toTileType == 'd'){ //eat dot, adjust tile
 				if (player.getDirection() == 'u'){
@@ -410,7 +617,9 @@ int main(){
 
 				score += puScore;
 				scoreDisplay.setString("Score: " + (std::to_string(score)));
-				frightMode = true;
+
+				//fright mode
+				//frightMode = true;
 				blinky.frightenGhost(fright);
 				blinkySpr.setTextureRect(fright); //fright blinky
 				inky.frightenGhost(fright);
@@ -419,11 +628,13 @@ int main(){
 				pinkySpr.setTextureRect(fright); //fright pinky
 				clyde.frightenGhost(fright);
 				clydeSpr.setTextureRect(fright); //fright clyde
+
+				//pause scatterChase timer
+				elapsed1 = clock.getElapsedTime();
+				frightTimer.restart();
 			}
 		}
 
-	
-		//playerSprite = player.getSprite();
 
 		window.clear();
 		window.draw(background);
@@ -448,13 +659,13 @@ int main(){
 					window.draw(drawTi);
 
 				}
-				
+				/*
 				else if (t.getType() == 'e'){
 				sf::Sprite drawTi = wall; //t.getSprite();
 				drawTi.setPosition(xpos, ypos);
 				window.draw(drawTi);
 				}
-				
+				*/
 			}
 		}
 
@@ -467,8 +678,16 @@ int main(){
 		bRow = blinky.getRow();
 		bCol = blinky.getColumn();
 
+		iRow = inky.getRow();
+		iCol = inky.getColumn();
 		window.draw(inkySpr);
+
+		piRow = pinky.getRow();
+		piCol = pinky.getColumn();
 		window.draw(pinkySpr);
+
+		cRow = clyde.getRow();
+		cCol = clyde.getColumn();
 		window.draw(clydeSpr);
 
 		window.draw(scoreDisplay);
@@ -483,6 +702,7 @@ int main(){
 			gameOver = true;
 		}
 
+		//all dots & power ups eaten -> score = 2580
 		window.display();
 	}
 }

@@ -28,7 +28,13 @@ public:
 	bool inc = true;
 
 	void scatterMode();
-	void move();
+	void chaseMode(int pRow, int pCol, char pDir); //blinky and pinky
+	void chaseModeInky(int pRow, int pCol, int bRow, int bCol, char pDir, char bDir);
+	void chaseModeClyde(int pRow, int pCol, char pDir);
+	void frightenGhost(sf::IntRect f);
+
+	void move(); 
+	void wrapHorizontal();
 	char chooseDirection(char toTileType);
 	float distanceCheck(int r, int c);
 	
@@ -65,8 +71,7 @@ public:
 	float getSpeedAdjust();
 	float getSpeedInc();
 
-	void frightenGhost(sf::IntRect f);
-
 	void resetGhost();
+	void startGhost(char m);
 
 };

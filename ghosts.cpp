@@ -34,16 +34,83 @@ Ghosts::Ghosts(char m, char n, sf::Sprite spr, float r, float c){
 }
 
 void Ghosts::scatterMode(){
+	mode = 's';
 	this->setTarget(homeTileRow, homeTileColumn);
 
+}
+void Ghosts::chaseMode(int pRow, int pCol, char pDir){ //blinky and pinky
+	mode = 'c';
+	if (name == 'b'){ // blinky, player tile
+		this->setTarget(pRow, pCol);
+	}
+	else if (name == 'p'){ //pinky, 4 tiles ahead of player
+		if (pDir == 'u'){
+			this->setTarget(pRow - 4, pCol - 4); //4 tiles ahead, 4 to the left
+		}
+		else if (pDir == 'd'){
+			this->setTarget(pRow + 4, pCol);
+		}
+		else if (pDir == 'l'){
+			this->setTarget(pRow, pCol -4);
+		}
+		else if (pDir == 'r'){
+			this->setTarget(pRow, pCol + 4);
+		}
+	}
+}
+void Ghosts::chaseModeInky(int pRow, int pCol, int bRow, int bCol, char pDir, char bDir){
+	mode = 'c';
+	int colDist= (pCol - bCol);
+	int rowDist= (pRow - bRow);
+	colDist = colDist * 2;
+	rowDist = rowDist * 2;
+
+	if (pDir == 'u'){
+		this->setTarget((pRow - 2) + rowDist, (pCol -2) + colDist); //2 tiles up, 2 tiles left
+	}
+	else if (pDir == 'd'){
+		this->setTarget((pRow + 2) + rowDist, pCol + colDist);
+	}
+	else if (pDir == 'l'){
+		this->setTarget(pRow + rowDist, (pCol - 2) + colDist);
+	}
+	else if (pDir == 'r'){
+		this->setTarget(pRow + rowDist, (pCol + 2) + colDist);
+	}
+}
+void Ghosts::chaseModeClyde(int pRow, int pCol, char pDir){
+	mode = 'c';
+	int rowDist = pRow - row;
+	int colDist = pCol - column;
+	if (rowDist > 8 || colDist > 8){
+		this->setTarget(homeTileRow, homeTileColumn);
+	}
+	else {
+		this->setTarget(pRow, pCol);
+	}
+}
+
+void Ghosts::frightenGhost(sf::IntRect f){
+	mode = 'f';
+	reverse(direction);
+	//sprite.setTextureRect(f);  //not working
 }
 
 
 void Ghosts::move(){
 	speedAdjust += speed;
 
+	if (direction == 'l' && row == 17 && column <= 1){
+		speedAdjust = 0; 
+		wrapHorizontal();
+	}
+	else if (direction == 'r' && row == 17 && column >= 26){
+		speedAdjust = 0;
+		wrapHorizontal();
+	}
+
 	//up
-	if (direction == 'u'){
+	else if (direction == 'u'){
 		sprite.move(0, -speed);
 		if (speedAdjust >= speedInc){
 			row -= 1;
@@ -74,6 +141,17 @@ void Ghosts::move(){
 			speedAdjust = 0;
 		}
 	}
+}
+void Ghosts::wrapHorizontal(){
+	if (direction == 'l'){
+		sprite.setPosition(27 * 8, row * 8);
+		column = 27;
+	}
+	else if (direction == 'r'){
+		sprite.setPosition(8, row * 8);
+		column = 1;
+	}
+	speedAdjust = 0;
 }
 
 char Ghosts::chooseDirection(char toTileType){
@@ -107,7 +185,7 @@ char Ghosts::chooseDirection(char toTileType){
 	
 }
 
-float Ghosts::distanceCheck(int r, int c){
+float Ghosts::distanceCheck(int r, int c){ //does not seem to be working
 	//distance = sqrt( (x2-x1)^2 - (y2-y1)^2 )
 	int x = std::pow(this->getTargetColumn() - c, 2);
 	int y = std::pow(this->getTargetRow() - r, 2);
@@ -220,34 +298,31 @@ float Ghosts::getSpeedInc(){
 }
 
 
-void Ghosts::frightenGhost(sf::IntRect f){ 
-	mode = 'f';
-	reverse(direction);
-	//sprite.setTextureRect(f);  //not working
-}
-
-
-
-
-
 void Ghosts::resetGhost(){ //not working
-	mode = 's';
-
 	if (name == 'b') {
-		//sprite.setPosition(13 * 8, 14 * 8); //not working
+		mode = 'c';
 		this->setPos(14, 13);
 	}
 	else if (name == 'i'){
 		//sprite.setPosition(11.5 * 8, 16.5 * 8);
-		this->setPos(17, 12);
+		mode = 'h';
+		//this->setPos(17, 12);
+		this->setPos(16.5, 11.5);
 	}
 	else if (name == 'p'){
 		//sprite.setPosition(13.5 * 8, 17 * 8);
-		this->setPos(17, 12);
+		mode = 'h';
+		this->setPos(17, 13.5);
 	}
 	else if (name == 'c'){
 		//sprite.setPosition(15.5 * 8, 16.5 * 8);
-		this->setPos(17, 12);
+		mode = 'h';
+		this->setPos(16.5, 15.5);
 	}
+}
 
+void Ghosts::startGhost(char m){
+	row = 14;
+	column = 13;
+	mode = m;
 }
